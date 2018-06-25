@@ -16,6 +16,13 @@ class GrpcClient {
     this.api = caller(`${this.hostname}:${this.port}`, WalletClient);
   }
 
+  async call(methodName, params) {
+    if (!params) {
+      params = [new EmptyMessage()]
+    }
+    return await this.api[methodName](...params)
+  }
+
   /**
    * Retrieve all connected witnesses
    *
