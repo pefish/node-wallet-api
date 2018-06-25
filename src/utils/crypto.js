@@ -6,17 +6,23 @@ const { keccak256 } = require('js-sha3');
 const jsSHA = require("../lib/sha256");
 const { byte2hexStr, byteArray2hexStr } = require("./bytes");
 
-const add_pre_fix = 'a0'; //a0 + address  ,a0 is version
-
+const add_pre_fix = '41'; //a0 + address  ,a0 is version
+const add_pre_fix_byte = 0x41;   //a0 + address  ,a0 is version
 
 /**
  * Sign A Transaction by priKey.
  * signature is 65 bytes, r[32] || s[32] || id[1](<27)
+ *
  * @returns  a Transaction object signed
  * @param priKeyBytes: privateKey for ECC
  * @param transaction: a Transaction object unSigned
  */
 function signTransaction(priKeyBytes, transaction) {
+
+  if (typeof priKeyBytes === 'string') {
+    priKeyBytes = hexStr2byteArray(priKeyBytes);
+  }
+
   let raw = transaction.getRawData();
   let rawBytes = raw.serializeBinary();
   let hashBytes = SHA256(rawBytes);
@@ -24,11 +30,11 @@ function signTransaction(priKeyBytes, transaction) {
   let uint8Array = new Uint8Array(signBytes);
   let count = raw.getContractList().length;
   for (let i = 0; i < count; i++) {
-    transaction.addSignature(uint8Array); //TODO: multy priKey
+    transaction.addSignature(uint8Array);
   }
+
   return transaction;
 }
-
 
 //return bytes of rowdata, use to sign.
 function getRowBytesFromTransactionBase64(base64Data) {
@@ -82,11 +88,34 @@ function getBase58CheckAddress(addressBytes) {
   return base58Check;
 }
 
-function validAddress(base58Sting) {
+
+function decode58Check(addressStr) {
+
+  var decodeCheck = decode58(addressStr);
+  if (decodeCheck.length <= 4) {
+    return null;
+  }
+
+  var decodeData = decodeCheck.slice(0, decodeCheck.length - 4);
+  var hash0 = SHA256(decodeData);
+  var hash1 = SHA256(hash0);
+
+  if (hash1[0] === decodeCheck[decodeData.length] &&
+    hash1[1] === decodeCheck[decodeData.length + 1] &&
+    hash1[2] === decodeCheck[decodeData.length + 2] &&
+    hash1[3] === decodeCheck[decodeData.length + 3]) {
+    return decodeData;
+  }
+
+  return null;
+}
+
+
+function isAddressValid(base58Sting) {
   if (typeof(base58Sting) != 'string') {
     return false;
   }
-  if (base58Sting.length != 35) {
+  if (base58Sting.length != 34) {
     return false;
   }
   var address = decode58(base58Sting);
@@ -175,7 +204,7 @@ function ECKeySign(hashBytes, priKeyBytes) {
   return hexStr2byteArray(signHex);
 }
 
-//toDO:
+
 //return 32 bytes
 function SHA256(msgBytes) {
   let shaObj = new jsSHA("SHA-256", "HEX");
@@ -188,16 +217,25 @@ function SHA256(msgBytes) {
 function passwordToAddress(password) {
   let com_priKeyBytes = base64DecodeFromString(password);
   let com_addressBytes = getAddressFromPriKey(com_priKeyBytes);
-  return byteArray2hexStr(com_addressBytes);
+  return getBase58CheckAddress(com_addressBytes);
+}
+
+function privateKeyToAddress(password) {
+  let com_priKeyBytes = hexStr2byteArray(password);
+  let com_addressBytes = getAddressFromPriKey(com_priKeyBytes);
+  return getBase58CheckAddress(com_addressBytes);
 }
 
 module.exports = {
   signTransaction,
+  SHA256,
   passwordToAddress,
   genPriKey,
   getAddressFromPriKey,
   getPubKeyFromPriKey,
   getBase58CheckAddress,
-  validAddress,
-  getBase58CheckAddressFromPriKeyBase64String
+  isAddressValid,
+  privateKeyToAddress,
+  getBase58CheckAddressFromPriKeyBase64String,
+  decode58Check,
 };

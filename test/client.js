@@ -1,6 +1,7 @@
 const {bytesToString} = require("../src/utils/bytes");
 const GRPCWebClient = require("../src/client/grpc-web");
 const assert = require("assert");
+const getContractListFromTransaction = require("../src/lib/code").getContractListFromTransaction;
 
 
 describe('client', () => {
