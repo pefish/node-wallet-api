@@ -57,6 +57,20 @@ function genPriKey() {
   return hexStr2byteArray(priKeyHex);
 }
 
+function genPriKeyBySeed(seed) {
+  let ec = new EC('secp256k1');
+  let key = ec.genKeyPair({
+    entropy: new Buffer(seed)
+  });
+  let priKey = key.getPrivate();
+  let priKeyHex = priKey.toString('hex');
+  while (priKeyHex.length < 64) {
+    priKeyHex = "0" + priKeyHex;
+  }
+
+  return hexStr2byteArray(priKeyHex);
+}
+
 //return address by bytes, pubBytes is byte[]
 function computeAddress(pubBytes) {
   if (pubBytes.length === 65) {
@@ -231,6 +245,7 @@ module.exports = {
   SHA256,
   passwordToAddress,
   genPriKey,
+  genPriKeyBySeed,
   getAddressFromPriKey,
   getPubKeyFromPriKey,
   getBase58CheckAddress,
