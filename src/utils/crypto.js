@@ -177,6 +177,10 @@ function getAddressFromPriKeyBase64String(priKeyBase64String) {
   return addressBase64;
 }
 
+function base58AddrToBase64(addressStr) {
+  return base64EncodeToString(decode58Check(addressStr))
+}
+
 //return pubkey by 65 bytes, priKeyBytes is byte[]
 function getPubKeyFromPriKey(priKeyBytes) {
   var ec = new EC('secp256k1');
@@ -253,4 +257,5 @@ module.exports = {
   privateKeyToAddress,
   getBase58CheckAddressFromPriKeyBase64String,
   decode58Check,
+  base58AddrToBase64,
 };

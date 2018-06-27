@@ -1,4 +1,4 @@
-const getBase58CheckAddress = require("../utils/crypto").getBase58CheckAddress;
+const getBase58CheckAddress = require("./crypto").getBase58CheckAddress;
 const {Block, Transaction} = require("../protocol/core/Tron_pb");
 const {TransferContract} = require("../protocol/core/Contract_pb");
 

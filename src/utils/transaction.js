@@ -81,6 +81,9 @@ function buildApplyForDelegate(address, url) {
 }
 
 module.exports = {
+  buildTransferContract,
+
+
   buildFreezeBalance,
   buildUnfreezeBalance,
   buildApplyForDelegate,

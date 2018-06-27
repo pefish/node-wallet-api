@@ -1,9 +1,11 @@
-const GrpcClient = require("./client/grpc");
-const HttpClient = require("./client/http");
-const Types = require("./protocol/api/api_pb");
-
 module.exports = {
-  GrpcClient,
-  HttpClient,
-  Types
+  GrpcClient: require("./client/grpc"),
+  HttpClient: require("./client/http"),
+  Types: {
+    ...require("./protocol/api/api_pb"),
+    ...require("./protocol/core/Contract_pb"),
+    ...require("./protocol/core/Discover_pb"),
+    ...require("./protocol/core/Tron_pb"),
+    ...require("./protocol/core/TronInventoryItems_pb")
+  }
 };

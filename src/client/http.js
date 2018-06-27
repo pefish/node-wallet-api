@@ -1,5 +1,5 @@
 const xhr = require("axios");
-const deserializeTransaction = require("../protocol/serializer").deserializeTransaction;
+const deserializeTransaction = require("../utils/serializer").deserializeTransaction;
 const {base64DecodeFromString, byteArray2hexStr, bytesToString} = require("../utils/bytes");
 const {Block, Transaction, Account} = require("../protocol/core/Tron_pb");
 const {AccountList, NumberMessage, WitnessList, AssetIssueList} = require("../protocol/api/api_pb");
