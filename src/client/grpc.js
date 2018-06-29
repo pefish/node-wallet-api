@@ -1,60 +1,46 @@
 
-const {EmptyMessage, NumberMessage} = require("../protocol/api/api_pb");
+const {EmptyMessage} = require("../protocol/api/api_pb");
 
 class GrpcClient {
 
   constructor(options) {
-    this.hostname = options.hostname;
+    this.host = options.host;
     this.port = options.port;
+    this.solidityHost = options.solidityHost;
+    this.solidityPort = options.solidityPort;
 
-    const {WalletClient} = require("../protocol/api/api_grpc_pb");
+    const {WalletClient, WalletSolidityClient} = require("../protocol/api/api_grpc_pb");
     const caller = require('grpc-caller');
 
-    /**
-     * @type {WalletClient}
-     */
-    this.api = caller(`${this.hostname}:${this.port}`, WalletClient);
+    if (this.host && this.port) {
+      this._walletClient = caller(`${this.host}:${this.port}`, WalletClient);
+    }
+
+    if (this.solidityHost && this.solidityPort) {
+      this._walletSolidityClient = caller(`${this.solidityHost}:${this.solidityPort}`, WalletSolidityClient);
+    }
+
   }
 
-  async call(methodName, params) {
+  async callWallet(methodName, params) {
+    if (!this._walletClient) {
+      throw new Error(`client not be inited`)
+    }
     if (!params) {
       params = [new EmptyMessage()]
     }
-    return await this.api[methodName](...params)
+    return await this._walletClient[methodName](...params)
   }
 
-  /**
-   * Retrieve all connected witnesses
-   *
-   * @returns {Promise<*>}
-   */
-  async getWitnesses() {
-    return await this.api.listWitnesses(new EmptyMessage())
-      .then(x => x.getWitnessesList());
+  async callWalletSolidity(methodName, params) {
+    if (!this._walletSolidityClient) {
+      throw new Error(`client not be inited`)
+    }
+    if (!params) {
+      params = [new EmptyMessage()]
+    }
+    return await this._walletSolidityClient[methodName](...params)
   }
-
-  /**
-   * Retrieve all connected nodes
-   *
-   * @returns {Promise<*>}
-   */
-  async getNodes() {
-    return await this.api.listNodes(new EmptyMessage())
-      .then(x => x.getNodesList());
-  }
-
-  /**
-   * Retrieves a block by the given number
-   *
-   * @param {number} number block number
-   * @returns {Promise<*>}
-   */
-  async getBlockByNumber(number) {
-    let message = new NumberMessage();
-    message.setNum(number);
-    return await this.api.getBlockByNum(message);
-  }
-
 }
 
 module.exports = GrpcClient;
